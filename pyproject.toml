@@ -2,7 +2,8 @@
 name = "djpay"
 version = "0.0.1"
 dependencies = [
-    "django>5.1.1"
+    "django>=5.1.1",
+    "requests>=2.32.3"
 ]
 authors = [
   { name="Kaveh Mehrbanian", email="mehrbaniankaveh@gmail.com" },

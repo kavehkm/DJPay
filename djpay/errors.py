@@ -6,5 +6,5 @@ class PaymentError(BasePaymentError):
     """Payment Error"""
 
 
-class PaymentMethodDoesNotExist(BasePaymentError):
-    """PaymentMethod Does Not Exist Error"""
+class PaymentBackendDoesNotExistError(BasePaymentError):
+    """PaymentBackend Does Not Exist Error"""

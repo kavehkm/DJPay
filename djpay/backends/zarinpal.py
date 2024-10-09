@@ -81,4 +81,35 @@ class ZarinPal(BaseBackend):
         return bill
 
     def verify(self, bill_id: int, **kwargs: Any) -> Bill:
-        pass
+        # check for Authority in kwargs
+        if "Authority" not in kwargs:
+            raise PaymentError("Required Authority parameter not provided.")
+        # try to find bill by given id
+        # just add transaction_id=None into conditions to ensure:
+        # bill did not verify before
+        try:
+            bill = Bill.objects.get(id=bill_id, transaction_id=None)
+        except Bill.DoesNotExist:
+            raise PaymentError("Bill does not exist.")
+        # send verify request
+        data = {
+            "authority": kwargs["Authority"],
+            "amount": bill.amount,
+            "merchant_id": self.merchant_id,
+        }
+        res = requests.post(VERIFY_ENDPOINT, data=data).json()
+        # extract data and errors from response
+        res_data = res.get("data")
+        res_errors = res.get("errors")
+        # check for errors
+        if res_errors:
+            raise PaymentError(res_errors.get("message"))
+        # check for invalid code
+        if res_data.get("code") != SUCCESS_STATUS_CODE:
+            raise PaymentError("Invalid code.")
+        # there is no error and invalid-code so:
+        # add ref_id as transaction_id on bill instance
+        # and return it as response
+        bill.transaction_id = res_data["ref_id"]
+        bill.save(update_fields=["transaction_id"])
+        return bill

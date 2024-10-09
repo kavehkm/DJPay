@@ -2,6 +2,7 @@
 from typing import Any
 
 # internal
+from ..models import Bill
 from ..errors import PaymentError
 
 
@@ -22,10 +23,10 @@ class BaseBackend(object):
     def error(self, message: str) -> None:
         raise PaymentError(message)
 
-    def pay(self, amount: int, **extra: Any) -> None:
+    def pay(self, amount: int, **extra: Any) -> Bill:
         raise NotImplementedError
 
-    def verify(self) -> None:
+    def verify(self, bill: Bill) -> Bill:
         raise NotImplementedError
 
     def __str__(self):

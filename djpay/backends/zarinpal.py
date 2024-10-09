@@ -6,6 +6,7 @@ import requests
 
 # dj
 from django.urls import reverse
+from django.core.exceptions import ImproperlyConfigured
 
 # internal
 from ..models import Bill
@@ -25,6 +26,28 @@ class ZarinPal(BaseBackend):
 
     identifier = "zarinpal"
     label = "ZarinPal"
+
+    def _validate_config(self, config: dict) -> dict:
+        # extract required data
+        currency = config.get("currency")
+        merchant_id = config.get("merchant_id")
+        callback_view_name = config.get("callback_view_name")
+
+        # validate currency
+        if (
+            not currency
+            or not isinstance(currency, str)
+            or currency not in ["IRT", "IRR"]
+        ):
+            raise ImproperlyConfigured("Invalid currency.")
+        # validate merchant_id
+        if not merchant_id or not isinstance(merchant_id, str):
+            raise ImproperlyConfigured("Invalid merchant_id")
+        # validate callback_view_name
+        if not callback_view_name or not isinstance(callback_view_name, str):
+            raise ImproperlyConfigured("Invalid callback_view_name")
+
+        return config
 
     @property
     def currency(self) -> str:

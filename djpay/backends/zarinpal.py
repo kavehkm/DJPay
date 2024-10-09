@@ -80,5 +80,5 @@ class ZarinPal(BaseBackend):
         bill.save(update_fields=["next_step"])
         return bill
 
-    def verify(self, bill: Bill) -> Bill:
+    def verify(self, bill_id: int, **kwargs: Any) -> Bill:
         pass

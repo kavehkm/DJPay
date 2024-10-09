@@ -15,5 +15,5 @@ class PayOnDelivery(BaseBackend):
     def pay(self, amount: int, **extra: Any) -> Bill:
         return Bill.objects.create(backend=self.identifier, amount=amount, extra=extra)
 
-    def verify(self, bill: Bill) -> Bill:
-        return super().verify(bill)
+    def verify(self, bill_id: int, **kwargs: Any) -> Bill:
+        return super().verify(bill_id, **kwargs)

@@ -26,7 +26,7 @@ class BaseBackend(object):
     def pay(self, amount: int, **extra: Any) -> Bill:
         raise NotImplementedError
 
-    def verify(self, bill: Bill) -> Bill:
+    def verify(self, bill_id: int, **kwargs: Any) -> Bill:
         raise NotImplementedError
 
     def __str__(self):

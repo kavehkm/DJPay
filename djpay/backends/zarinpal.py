@@ -6,13 +6,12 @@ import requests
 
 # dj
 from django.urls import reverse
-from django.core.exceptions import ImproperlyConfigured
 
 # internal
 from ..models import Bill
 from .base import BaseBackend
-from ..errors import PaymentError
 from ..utils import absolute_reverse
+from ..errors import PaymentError, PaymentImproperlyConfiguredError
 
 
 SUCCESS_STATUS_CODE = 100
@@ -39,13 +38,13 @@ class ZarinPal(BaseBackend):
             or not isinstance(currency, str)
             or currency not in ["IRT", "IRR"]
         ):
-            raise ImproperlyConfigured("Invalid currency.")
+            raise PaymentImproperlyConfiguredError("Invalid currency.")
         # validate merchant_id
         if not merchant_id or not isinstance(merchant_id, str):
-            raise ImproperlyConfigured("Invalid merchant_id")
+            raise PaymentImproperlyConfiguredError("Invalid merchant_id")
         # validate callback_view_name
         if not callback_view_name or not isinstance(callback_view_name, str):
-            raise ImproperlyConfigured("Invalid callback_view_name")
+            raise PaymentImproperlyConfiguredError("Invalid callback_view_name")
 
         return config
 

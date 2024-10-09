@@ -14,7 +14,7 @@ class PayManager(object):
         self._request = None
         self._configs = {
             "zarinpal": {
-                "currency": "IRT",
+                "currency": "",
                 "merchant_id": "",
                 "callback_view_name": "",
             },

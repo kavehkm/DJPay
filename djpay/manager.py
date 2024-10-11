@@ -1,5 +1,4 @@
 # dj
-from django.http.request import HttpRequest
 from django.utils.functional import cached_property
 
 # internal
@@ -11,7 +10,6 @@ class PayManager(object):
     """PayManager"""
 
     def __init__(self) -> None:
-        self._request = None
         self._configs = {
             "zarinpal": {
                 "currency": "",
@@ -19,14 +17,6 @@ class PayManager(object):
                 "callback_view_name": "",
             },
         }
-
-    @property
-    def request(self) -> HttpRequest:
-        return self._request
-
-    @request.setter
-    def request(self, value: HttpRequest) -> None:
-        self._request = value
 
     @property
     def zarinpal_currency(self) -> str:
@@ -58,12 +48,17 @@ class PayManager(object):
 
         return BACKENDS
 
-    def get_backend(self, identifier: str) -> BaseBackend:
+    @cached_property
+    def backends_as_choices(self):
+        return ((backend.identifier, backend.label) for backend in self.backends)
+
+    def get_backend(self, identifier: str, config: dict | None = None) -> BaseBackend:
         for backend in self.backends:
             if identifier == backend.identifier:
-                # get config by given identifier and -
-                # update it by adding request object
-                config = self._configs.get(identifier, {})
-                config["request"] = self._request
-                return backend(config)
+                # get manager_config by given identifier
+                manager_config = self._configs.get(identifier, {})
+                # update manager_config by given config if any
+                if config:
+                    manager_config.update(config)
+                return backend(manager_config)
         raise PaymentBackendDoesNotExistError

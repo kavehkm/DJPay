@@ -103,16 +103,17 @@ class ZarinPal(BaseBackend):
         return bill
 
     def verify(self, bill_id: int, **kwargs: Any) -> Bill:
+        # try to find bill by given id
+        try:
+            bill = Bill.objects.get(id=bill_id)
+        except Bill.DoesNotExist:
+            raise PaymentError("Bill does not exist.")
+        # check verified status
+        if bill.verified:
+            raise PaymentError("Invalid bill.")
         # check for Authority in kwargs
         if "Authority" not in kwargs:
             raise PaymentError("Required Authority parameter not provided.")
-        # try to find bill by given id
-        # just add transaction_id=None into conditions to ensure:
-        # bill did not verify before
-        try:
-            bill = Bill.objects.get(id=bill_id, transaction_id=None)
-        except Bill.DoesNotExist:
-            raise PaymentError("Bill does not exist.")
         # send verify request
         data = {
             "authority": kwargs["Authority"],
@@ -130,8 +131,10 @@ class ZarinPal(BaseBackend):
         if res_data.get("code") != SUCCESS_STATUS_CODE:
             raise PaymentError("Invalid code.")
         # there is no error and invalid-code so:
-        # add ref_id as transaction_id on bill instance
+        # 1) add ref_id as transaction_id on bill instance
+        # 2) change verified status value to True
         # and return it as response
         bill.transaction_id = res_data["ref_id"]
-        bill.save(update_fields=["transaction_id"])
+        bill.verified = True
+        bill.save(update_fields=["transaction_id", "verified"])
         return bill

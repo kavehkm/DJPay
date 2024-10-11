@@ -13,6 +13,7 @@ class Bill(models.Model):
     transaction_id = models.CharField(max_length=255, null=True, blank=True)
     extra = models.JSONField(default=dict)
     next_step = models.URLField(null=True, blank=True)
+    verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

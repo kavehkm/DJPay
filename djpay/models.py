@@ -1,6 +1,9 @@
 # dj
 from django.db import models
 
+# internal
+from .utils import clean_json_data
+
 
 class Bill(models.Model):
     """Bill"""
@@ -16,6 +19,9 @@ class Bill(models.Model):
     @property
     def has_next_step(self):
         return True if self.next_step else False
+
+    def clean(self):
+        self.extra = clean_json_data(self.extra)
 
     def __str__(self):
         return f"{self.backend}-{self.id}"

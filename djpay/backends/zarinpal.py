@@ -102,12 +102,10 @@ class ZarinPal(BaseBackend):
         bill.save(update_fields=["next_step"])
         return bill
 
-    def verify(self, bill_id: int, **kwargs: Any) -> Bill:
-        # try to find bill by given id
-        try:
-            bill = Bill.objects.get(id=bill_id)
-        except Bill.DoesNotExist:
-            raise PaymentError("Bill does not exist.")
+    def verify(self, bill: Bill, **kwargs: Any) -> Bill:
+        # check for backend
+        if bill.backend != self.identifier:
+            raise PaymentError("Invalid bill.")
         # check verified status
         if bill.verified:
             raise PaymentError("Invalid bill.")

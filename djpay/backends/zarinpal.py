@@ -6,6 +6,7 @@ import requests
 
 # dj
 from django.urls import reverse
+from django.http import HttpRequest
 
 # internal
 from ..models import Bill
@@ -56,8 +57,7 @@ class ZarinPal(BaseBackend):
     def merchant_id(self) -> str:
         return self._get_config("merchant_id")
 
-    def get_callback_url(self, bill_id: int) -> str:
-        request = self._get_config("request")
+    def get_callback_url(self, bill_id: int, request: HttpRequest = None) -> str:
         callback_view_name = self._get_config("callback_view_name")
         callback_view_kwargs = {"bill_pk": bill_id}
         # check for request:
@@ -71,6 +71,8 @@ class ZarinPal(BaseBackend):
             return reverse(callback_view_name, kwargs=callback_view_kwargs)
 
     def pay(self, amount: int, **extra: Any) -> Bill:
+        # pop out request from extra
+        request = extra.pop("request", None)
         # create bill
         bill = Bill.objects.create(
             backend=self.identifier,
@@ -82,7 +84,7 @@ class ZarinPal(BaseBackend):
             "merchant_id": self.merchant_id,
             "amount": amount,
             "currency": self.currency,
-            "callback_url": self.get_callback_url(bill.id),
+            "callback_url": self.get_callback_url(bill.id, request),
             "description": "No description provided.",
         }
         res = requests.post(INITIAL_ENDPOINT, data=data).json()

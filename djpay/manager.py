@@ -1,5 +1,5 @@
 # dj
-from django.utils.functional import cached_property
+from django.utils.functional import classproperty
 
 # internal
 from .backends.base import BaseBackend
@@ -17,6 +17,16 @@ class PayManager(object):
                 "callback_view_name": "",
             },
         }
+
+    @classproperty
+    def backends(cls) -> list:
+        from .backends import BACKENDS
+
+        return BACKENDS
+
+    @classproperty
+    def backends_as_choices(cls):
+        return ((backend.identifier, backend.label) for backend in cls.backends)
 
     @property
     def zarinpal_currency(self) -> str:
@@ -41,16 +51,6 @@ class PayManager(object):
     @zarinpal_callback_view_name.setter
     def zarinpal_callback_view_name(self, value: str) -> None:
         self._configs["zarinpal"]["callback_view_name"] = value
-
-    @cached_property
-    def backends(self) -> list:
-        from .backends import BACKENDS
-
-        return BACKENDS
-
-    @cached_property
-    def backends_as_choices(self):
-        return ((backend.identifier, backend.label) for backend in self.backends)
 
     def get_backend(self, identifier: str, config: dict | None = None) -> BaseBackend:
         for backend in self.backends:

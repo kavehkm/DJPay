@@ -28,6 +28,13 @@ class PayManager(object):
     def backends_as_choices(cls):
         return ((backend.identifier, backend.label) for backend in cls.backends)
 
+    @classmethod
+    def get_backend_class(cls, identifier: str):
+        for backend in cls.backends:
+            if identifier == backend.identifier:
+                return backend
+        raise PaymentBackendDoesNotExistError
+
     @property
     def zarinpal_currency(self) -> str:
         return self._configs["zarinpal"]["currency"]
@@ -53,12 +60,12 @@ class PayManager(object):
         self._configs["zarinpal"]["callback_view_name"] = value
 
     def get_backend(self, identifier: str, config: dict | None = None) -> BaseBackend:
-        for backend in self.backends:
-            if identifier == backend.identifier:
-                # get manager_config by given identifier
-                manager_config = self._configs.get(identifier, {})
-                # update manager_config by given config if any
-                if config:
-                    manager_config.update(config)
-                return backend(manager_config)
-        raise PaymentBackendDoesNotExistError
+        # get backend class
+        backend_class = self.get_backend_class(identifier)
+        # get manager_config by given identifier
+        manager_config = self._configs.get(identifier, {})
+        # update manager_config by given config if any
+        if config:
+            manager_config.update(config)
+
+        return backend_class(manager_config)

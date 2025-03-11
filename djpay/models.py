@@ -24,6 +24,17 @@ class Bill(models.Model):
     def clean(self):
         self.extra = clean_json_data(self.extra)
 
+    def save(
+        self,
+        *args,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.full_clean()
+        return super().save(*args, force_insert, force_update, using, update_fields)
+
     def __str__(self):
         return f"{self.backend}-{self.id}"
 

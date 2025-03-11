@@ -21,7 +21,7 @@ class Bill(models.Model):
     def has_next_step(self):
         return True if self.next_step else False
 
-    def clean(self):
+    def clean_extra(self):
         self.extra = clean_json_data(self.extra)
 
     def save(
@@ -32,7 +32,7 @@ class Bill(models.Model):
         using=None,
         update_fields=None,
     ):
-        self.full_clean()
+        self.clean_extra()
         return super().save(*args, force_insert, force_update, using, update_fields)
 
     def __str__(self):

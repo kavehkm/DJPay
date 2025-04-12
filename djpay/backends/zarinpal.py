@@ -27,7 +27,8 @@ class ZarinPal(BaseBackend):
     identifier = "zarinpal"
     label = "ZarinPal"
 
-    def _validate_config(self, config: dict) -> dict:
+    @classmethod
+    def validate_config(cls, config: dict) -> dict:
         # extract required data
         currency = config.get("currency")
         merchant_id = config.get("merchant_id")

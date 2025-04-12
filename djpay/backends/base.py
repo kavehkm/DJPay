@@ -15,9 +15,10 @@ class BaseBackend(object):
     def __init__(self, config: dict | None = None) -> None:
         if config is None:
             config = {}
-        self._config = self._validate_config(config)
+        self._config = self.validate_config(config)
 
-    def _validate_config(self, config: dict) -> dict:  # noqa
+    @classmethod
+    def validate_config(cls, config: dict) -> dict:
         return config
 
     def _get_config(self, name: str, default: Any = None) -> Any:

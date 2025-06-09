@@ -7,14 +7,16 @@ import requests
 # dj
 from django.urls import reverse
 from django.http import HttpRequest
+from django.urls.exceptions import NoReverseMatch
 
 # internal
 from ..models import Bill
 from .base import BaseBackend
 from ..utils import absolute_reverse
-from ..errors import PaymentError, PaymentImproperlyConfiguredError
+from ..errors import PaymentImproperlyConfiguredError
 
 
+SAMPLE_BILL_ID = 0
 SUCCESS_STATUS_CODE = 100
 PAY_ENDPOINT = "https://www.zarinpal.com/pg/StartPay/"
 VERIFY_ENDPOINT = "https://api.zarinpal.com/pg/v4/payment/verify.json"
@@ -43,10 +45,14 @@ class ZarinPal(BaseBackend):
             raise PaymentImproperlyConfiguredError("Invalid currency.")
         # validate merchant_id
         if not merchant_id or not isinstance(merchant_id, str):
-            raise PaymentImproperlyConfiguredError("Invalid merchant_id")
+            raise PaymentImproperlyConfiguredError("Invalid merchant_id.")
         # validate callback_view_name
         if not callback_view_name or not isinstance(callback_view_name, str):
-            raise PaymentImproperlyConfiguredError("Invalid callback_view_name")
+            raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
+        try:
+            reverse(callback_view_name, {"bill_id": SAMPLE_BILL_ID})
+        except NoReverseMatch:
+            raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
 
         return config
 
@@ -94,10 +100,10 @@ class ZarinPal(BaseBackend):
         res_errors = res.get("errors")
         # check for errors
         if res_errors:
-            raise PaymentError(res_errors.get("message"))
+            self.error(res_errors.get("message"))
         # check for invalid code
         if res_data.get("code") != SUCCESS_STATUS_CODE:
-            raise PaymentError("Invalid code.")
+            self.error("Invalid code.")
         # there is no error and invalid-code so:
         # add redirect-url as next_step on bill instance
         # and return it as response
@@ -108,13 +114,13 @@ class ZarinPal(BaseBackend):
     def verify(self, bill: Bill, **kwargs: Any) -> Bill:
         # check for backend
         if bill.backend != self.identifier:
-            raise PaymentError("Invalid bill.")
+            self.error("Invalid bill.")
         # check verified status
         if bill.verified:
-            raise PaymentError("Invalid bill.")
+            self.error("Invalid bill.")
         # check for Authority in kwargs
         if "Authority" not in kwargs:
-            raise PaymentError("Required Authority parameter not provided.")
+            self.error("Required Authority parameter not provided.")
         # send verify request
         data = {
             "authority": kwargs["Authority"],
@@ -127,10 +133,10 @@ class ZarinPal(BaseBackend):
         res_errors = res.get("errors")
         # check for errors
         if res_errors:
-            raise PaymentError(res_errors.get("message"))
+            self.error(res_errors.get("message"))
         # check for invalid code
         if res_data.get("code") != SUCCESS_STATUS_CODE:
-            raise PaymentError("Invalid code.")
+            self.error("Invalid code.")
         # there is no error and invalid-code so:
         # 1) add ref_id as transaction_id on bill instance
         # 2) change verified status value to True

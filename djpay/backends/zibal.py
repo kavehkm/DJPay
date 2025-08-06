@@ -92,13 +92,9 @@ class Zibal(BaseBackend):
         }
         res = requests.post(INITIAL_ENDPOINT, data=data).json()
 
-        # extract server response
-        res_result = res.get("result")
-        res_message = res.get("message")
-
         # check for errors
-        if res_result != SUCCESS_STATUS_CODE:
-            self.error(res_message)
+        if res["result"] != SUCCESS_STATUS_CODE:
+            self.error(res["message"])
 
         # there is no error and invalid-code so:
         # add redirect-url as next_step on bill instance
@@ -125,13 +121,9 @@ class Zibal(BaseBackend):
         }
         res = requests.post(VERIFY_ENDPOINT, data=data).json()
 
-        # extract server response
-        res_result = res.get("result")
-        res_message = res.get("message")
-
         # check for errors
-        if res_result  != SUCCESS_STATUS_CODE:
-            self.error(res_message)
+        if res["result"]  != SUCCESS_STATUS_CODE:
+            self.error(res["message"])
 
         # there is no error and invalid-code so:
         # 1) add ref_id as transaction_id on bill instance

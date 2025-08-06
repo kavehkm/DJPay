@@ -14,6 +14,21 @@ class Zibal(BaseBackend):
 
     @classmethod
     def validate_config(cls, config: dict) -> dict:
+        # extract required data
+        merchant_id = config.get("merchant_id")
+        callback_view_name = config.get("callback_view_name")
+
+        # validate merchant_id
+        if not merchant_id or not isinstance(merchant_id, str):
+            raise PaymentImproperlyConfiguredError("Invalid merchant_id.")
+        # validate callback_view_name
+        if not callback_view_name or not isinstance(callback_view_name, str):
+            raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
+        try:
+            reverse(callback_view_name, {"bill_id": SAMPLE_BILL_ID})
+        except NoReverseMatch:
+            raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
+
         return config
 
     def pay(self, amount: int, **extra: Any) -> Bill:

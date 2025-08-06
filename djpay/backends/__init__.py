@@ -5,6 +5,7 @@ from typing import List, Tuple
 from django.utils.functional import cached_property
 
 # internal
+from .zibal import Zibal
 from .base import BaseBackend
 from .zarinpal import ZarinPal
 from .pay_on_delivery import PayOnDelivery
@@ -16,7 +17,7 @@ class BackendsPool(object):
 
     @cached_property
     def backends(self) -> List:
-        return [ZarinPal, PayOnDelivery]
+        return [ZarinPal, Zibal, PayOnDelivery]
 
     @cached_property
     def as_choices(self) -> List[Tuple[str, str]]:

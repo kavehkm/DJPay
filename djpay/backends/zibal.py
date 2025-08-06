@@ -126,8 +126,9 @@ class Zibal(BaseBackend):
             self.error(res["message"])
 
         # there is no error and invalid-code so:
-        # 1) add ref_id as transaction_id on bill instance
+        # 1) add refNumber as transaction_id on bill instance
         # 2) change verified status value to True
+        # 3) save zibal verify response to extra field
         # and return it as response
         bill.transaction_id = res["refNumber"]
         bill.verified = True

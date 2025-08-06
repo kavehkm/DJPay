@@ -31,6 +31,10 @@ class Zibal(BaseBackend):
 
         return config
 
+    @property
+    def merchant_id(self) -> str:
+        return self._get_config("merchant_id")
+
     def pay(self, amount: int, **extra: Any) -> Bill:
         pass
 

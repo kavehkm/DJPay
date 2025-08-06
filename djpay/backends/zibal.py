@@ -1,9 +1,15 @@
 # standard
 from typing import Any
 
+# dj
+from django.urls import reverse
+from django.http import HttpRequest
+from django.urls.exceptions import NoReverseMatch
+
 # internal
 from ..models import Bill
 from .base import BaseBackend
+from ..utils import absolute_reverse
 from ..errors import PaymentImproperlyConfiguredError
 
 
@@ -38,6 +44,19 @@ class Zibal(BaseBackend):
     @property
     def merchant_id(self) -> str:
         return self._get_config("merchant_id")
+
+    def get_callback_url(self, bill_id: int, request: HttpRequest = None) -> str:
+        callback_view_name = self._get_config("callback_view_name")
+        callback_view_kwargs = {"bill_pk": bill_id}
+        # check for request:
+        # if request is present, its means user needs to absolute url
+        # otherwise there is no need to absolute and relative is also acceptable
+        if request:
+            return absolute_reverse(
+                request, callback_view_name, kwargs=callback_view_kwargs
+            )
+        else:
+            return reverse(callback_view_name, kwargs=callback_view_kwargs)
 
     def pay(self, amount: int, **extra: Any) -> Bill:
         pass

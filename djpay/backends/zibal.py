@@ -117,7 +117,6 @@ class Zibal(BaseBackend):
         # check for trackId in kwargs
         if "trackId" not in kwargs:
             self.error("Required trackId parameter not provided.")
-
         # check for trackId type
         track_id = kwargs["trackId"][0] if kwargs["trackId"] else ""
         if not track_id.isdigit():

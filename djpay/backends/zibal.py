@@ -93,11 +93,11 @@ class Zibal(BaseBackend):
         res = requests.post(INITIAL_ENDPOINT, data=data).json()
 
         # extract server response
+        res_result = res.get("result")
         res_message = res.get("message")
-        result = res.get("result")
 
         # check for errors
-        if result != SUCCESS_STATUS_CODE:
+        if res_result != SUCCESS_STATUS_CODE:
             self.error(res_message)
 
         # there is no error and invalid-code so:
@@ -108,4 +108,37 @@ class Zibal(BaseBackend):
         return bill
 
     def verify(self, bill: Bill, **kwargs: Any) -> Bill:
-        pass
+        # check for backend
+        if bill.backend != self.identifier:
+            self.error("Invalid bill.")
+        # check verified status
+        if bill.verified:
+            self.error("Invalid bill.")
+        # check for track_id in kwargs
+        if "trackId" not in kwargs:
+            self.error("Required trackId parameter not provided.")
+
+        # send verify request
+        data = {
+            "merchant": self.merchant_id,
+            "trackId": kwargs["trackId"],
+        }
+        res = requests.post(VERIFY_ENDPOINT, data=data).json()
+
+        # extract server response
+        res_result = res.get("result")
+        res_message = res.get("message")
+
+        # check for errors
+        if res_result  != SUCCESS_STATUS_CODE:
+            self.error(res_message)
+
+        # there is no error and invalid-code so:
+        # 1) add ref_id as transaction_id on bill instance
+        # 2) change verified status value to True
+        # and return it as response
+        bill.transaction_id = res["refNumber"]
+        bill.verified = True
+        bill.extra["verify_response"] = res
+        bill.save(update_fields=["transaction_id", "verified", "extra"])
+        return bill

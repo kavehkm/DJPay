@@ -69,10 +69,10 @@ class Zibal(BaseBackend):
         # pop out request from extra
         request = extra.pop("request", None)
 
-        # pop out optional data from extra
-        description = extra.pop("description", None)
-        order_id = extra.pop("order_id", None)
-        mobile = extra.pop("mobile", None)
+        # get optional data from extra
+        description = extra.get("description")
+        order_id = extra.get("order_pk")
+        mobile = extra.get("mobile")
 
         # create bill
         bill = Bill.objects.create(

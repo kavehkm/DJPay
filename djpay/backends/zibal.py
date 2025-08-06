@@ -14,6 +14,10 @@ from ..errors import PaymentImproperlyConfiguredError
 
 
 SAMPLE_BILL_ID = 0
+SUCCESS_STATUS_CODE = 100
+PAY_ENDPOINT = "https://gateway.zibal.ir/start/"
+VERIFY_ENDPOINT = "https://gateway.zibal.ir/v1/verify"
+INITIAL_ENDPOINT = "https://gateway.zibal.ir/v1/request"
 
 
 class Zibal(BaseBackend):

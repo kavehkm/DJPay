@@ -52,6 +52,10 @@ class Zibal(BaseBackend):
     def merchant_id(self) -> str:
         return self._get_config("merchant_id")
 
+    @property
+    def headers(self):
+        return {"Content-Type": "application/json"}
+
     def get_callback_url(self, bill_id: int, request: HttpRequest = None) -> str:
         callback_view_name = self._get_config("callback_view_name")
         callback_view_kwargs = {"bill_pk": bill_id}
@@ -90,7 +94,7 @@ class Zibal(BaseBackend):
             "orderId": order_id,
             "mobile": mobile,
         }
-        res = requests.post(INITIAL_ENDPOINT, data=data).json()
+        res = requests.post(INITIAL_ENDPOINT,json=data, headers=self.headers).json()
 
         # check for errors
         if res["result"] != SUCCESS_STATUS_CODE:
@@ -99,7 +103,8 @@ class Zibal(BaseBackend):
         # there is no error and invalid-code so:
         # add redirect-url as next_step on bill instance
         # and return it as response
-        bill.next_step = PAY_ENDPOINT + res["trackId"]
+        track_id = str(res["trackId"])
+        bill.next_step = PAY_ENDPOINT + track_id
         bill.save(update_fields=["next_step"])
         return bill
 
@@ -110,16 +115,21 @@ class Zibal(BaseBackend):
         # check verified status
         if bill.verified:
             self.error("Invalid bill.")
-        # check for track_id in kwargs
+        # check for trackId in kwargs
         if "trackId" not in kwargs:
             self.error("Required trackId parameter not provided.")
+
+        # check for trackId type
+        track_id = kwargs["trackId"][0] if kwargs["trackId"] else ""
+        if not track_id.isdigit():
+            self.error("trackId must be a numeric string.")
 
         # send verify request
         data = {
             "merchant": self.merchant_id,
-            "trackId": kwargs["trackId"],
+            "trackId": int(track_id),
         }
-        res = requests.post(VERIFY_ENDPOINT, data=data).json()
+        res = requests.post(VERIFY_ENDPOINT, json=data, headers=self.headers).json()
 
         # check for errors
         if res["result"]  != SUCCESS_STATUS_CODE:

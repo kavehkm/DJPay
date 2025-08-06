@@ -4,6 +4,10 @@ from typing import Any
 # internal
 from ..models import Bill
 from .base import BaseBackend
+from ..errors import PaymentImproperlyConfiguredError
+
+
+SAMPLE_BILL_ID = 0
 
 
 class Zibal(BaseBackend):

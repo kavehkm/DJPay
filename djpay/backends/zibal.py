@@ -103,8 +103,7 @@ class Zibal(BaseBackend):
         # there is no error and invalid-code so:
         # add redirect-url as next_step on bill instance
         # and return it as response
-        track_id = str(res["trackId"])
-        bill.next_step = PAY_ENDPOINT + track_id
+        bill.next_step = "{}{}".format(PAY_ENDPOINT, res["trackId"])
         bill.save(update_fields=["next_step"])
         return bill
 

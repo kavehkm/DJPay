@@ -23,8 +23,8 @@ INITIAL_ENDPOINT = "https://gateway.zibal.ir/v1/request"
 class Zibal(BaseBackend):
     """Zibal"""
 
-    identifier = "zarinpal"
-    label = "ZarinPal"
+    identifier = "zibal"
+    label = "Zibal"
 
     @classmethod
     def validate_config(cls, config: dict) -> dict:

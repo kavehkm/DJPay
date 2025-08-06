@@ -1,6 +1,9 @@
 # standard
 from typing import Any
 
+# requests
+import requests
+
 # dj
 from django.urls import reverse
 from django.http import HttpRequest
@@ -63,7 +66,46 @@ class Zibal(BaseBackend):
             return reverse(callback_view_name, kwargs=callback_view_kwargs)
 
     def pay(self, amount: int, **extra: Any) -> Bill:
-        pass
+        # pop out request from extra
+        request = extra.pop("request", None)
+
+        # pop out optional data from extra
+        description = extra.pop("description", None)
+        order_id = extra.pop("order_id", None)
+        mobile = extra.pop("mobile", None)
+
+        # create bill
+        bill = Bill.objects.create(
+            backend=self.identifier,
+            amount=amount,
+            extra=extra,
+        )
+
+        # send initialize request
+        data = {
+            "merchant": self.merchant_id,
+            "amount": amount,
+            "callbackUrl": self.get_callback_url(bill.id, request),
+            "description": description,
+            "orderId": order_id,
+            "mobile": mobile,
+        }
+        res = requests.post(INITIAL_ENDPOINT, data=data).json()
+
+        # extract server response
+        res_message = res.get("message")
+        result = res.get("result")
+
+        # check for errors
+        if result != SUCCESS_STATUS_CODE:
+            self.error(res_message)
+
+        # there is no error and invalid-code so:
+        # add redirect-url as next_step on bill instance
+        # and return it as response
+        bill.next_step = PAY_ENDPOINT + res["trackId"]
+        bill.save(update_fields=["next_step"])
+        return bill
 
     def verify(self, bill: Bill, **kwargs: Any) -> Bill:
         pass

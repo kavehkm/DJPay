@@ -94,7 +94,7 @@ class Zibal(BaseBackend):
             "orderId": order_id,
             "mobile": mobile,
         }
-        res = requests.post(INITIAL_ENDPOINT,json=data, headers=self.headers).json()
+        res = requests.post(INITIAL_ENDPOINT, json=data, headers=self.headers).json()
 
         # check for errors
         if res["result"] != SUCCESS_STATUS_CODE:
@@ -130,7 +130,7 @@ class Zibal(BaseBackend):
         res = requests.post(VERIFY_ENDPOINT, json=data, headers=self.headers).json()
 
         # check for errors
-        if res["result"]  != SUCCESS_STATUS_CODE:
+        if res["result"] != SUCCESS_STATUS_CODE:
             self.error(res["message"])
 
         # there is no error and invalid-code so:

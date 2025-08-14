@@ -16,7 +16,7 @@ from ..utils import absolute_reverse
 from ..errors import PaymentImproperlyConfiguredError
 
 
-SAMPLE_BILL_ID = 0
+SAMPLE_BILL_PK = 0
 SUCCESS_STATUS_CODE = 100
 PAY_ENDPOINT = "https://www.zarinpal.com/pg/StartPay/"
 VERIFY_ENDPOINT = "https://api.zarinpal.com/pg/v4/payment/verify.json"
@@ -50,7 +50,7 @@ class ZarinPal(BaseBackend):
         if not callback_view_name or not isinstance(callback_view_name, str):
             raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
         try:
-            reverse(callback_view_name, {"bill_id": SAMPLE_BILL_ID})
+            reverse(callback_view_name, kwargs={"bill_pk": SAMPLE_BILL_PK})
         except NoReverseMatch:
             raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
 
@@ -64,9 +64,9 @@ class ZarinPal(BaseBackend):
     def merchant_id(self) -> str:
         return self._get_config("merchant_id")
 
-    def get_callback_url(self, bill_id: int, request: HttpRequest = None) -> str:
+    def get_callback_url(self, bill_pk: int, request: HttpRequest = None) -> str:
         callback_view_name = self._get_config("callback_view_name")
-        callback_view_kwargs = {"bill_pk": bill_id}
+        callback_view_kwargs = {"bill_pk": bill_pk}
         # check for request:
         # if request is present, its means user needs to absolute url
         # otherwise there is no need to absolute and relative is also acceptable
@@ -91,7 +91,7 @@ class ZarinPal(BaseBackend):
             "merchant_id": self.merchant_id,
             "amount": amount,
             "currency": self.currency,
-            "callback_url": self.get_callback_url(bill.id, request),
+            "callback_url": self.get_callback_url(bill.pk, request),
             "description": "No description provided.",
         }
         res = requests.post(INITIAL_ENDPOINT, data=data).json()

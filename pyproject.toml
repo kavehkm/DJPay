@@ -7,13 +7,14 @@ include = ["djpay", "djpay.*"]
 
 [project]
 name = "djpay"
-version = "0.1.6"
+version = "0.2.0"
 dependencies = [
     "django>=5.1.1",
     "requests>=2.32.3"
 ]
 authors = [
   { name="Kaveh Mehrbanian", email="mehrbaniankaveh@gmail.com" },
+  { name="Sajjad Daneshmand", email="Mr.SajjadDaneshmand@gmail.com"}
 ]
 description = "A reusable Django app for handling various type of paying methods"
 readme = "README.md"

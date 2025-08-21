@@ -32,9 +32,17 @@ class Zibal(BaseBackend):
     @classmethod
     def validate_config(cls, config: dict) -> dict:
         # extract required data
+        currency = config.get("currency")
         merchant_id = config.get("merchant_id")
         callback_view_name = config.get("callback_view_name")
 
+        # validate currency
+        if (
+                not currency
+                or not isinstance(currency, str)
+                or currency not in ["IRT", "IRR"]
+        ):
+            raise PaymentImproperlyConfiguredError("Invalid currency.")
         # validate merchant_id
         if not merchant_id or not isinstance(merchant_id, str):
             raise PaymentImproperlyConfiguredError("Invalid merchant_id.")
@@ -47,6 +55,10 @@ class Zibal(BaseBackend):
             raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
 
         return config
+
+    @property
+    def currency(self) -> str:
+        return self._get_config("currency", "IRT")
 
     @property
     def merchant_id(self) -> str:
@@ -69,6 +81,12 @@ class Zibal(BaseBackend):
         else:
             return reverse(callback_view_name, kwargs=callback_view_kwargs)
 
+    def convert_amount_currency(self, amount):
+        if self.currency == "IRR":
+            return amount
+        else:
+            return amount * 10
+
     def pay(self, amount: int, **extra: Any) -> Bill:
         # pop out request from extra
         request = extra.pop("request", None)
@@ -77,6 +95,9 @@ class Zibal(BaseBackend):
         description = extra.get("description")
         order_id = extra.get("order_pk")
         mobile = extra.get("mobile")
+
+        # convert amount base on currency
+        amount = self.convert_amount_currency(amount)
 
         # create bill
         bill = Bill.objects.create(
@@ -89,7 +110,7 @@ class Zibal(BaseBackend):
         data = {
             "merchant": self.merchant_id,
             "amount": amount,
-            "callbackUrl": self.get_callback_url(bill.id, request),
+            "callbackUrl": self.get_callback_url(bill.pk, request),
             "description": description,
             "orderId": order_id,
             "mobile": mobile,

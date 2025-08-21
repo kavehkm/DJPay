@@ -38,9 +38,9 @@ class Zibal(BaseBackend):
 
         # validate currency
         if (
-                not currency
-                or not isinstance(currency, str)
-                or currency not in ["IRT", "IRR"]
+            not currency
+            or not isinstance(currency, str)
+            or currency not in ["IRT", "IRR"]
         ):
             raise PaymentImproperlyConfiguredError("Invalid currency.")
         # validate merchant_id

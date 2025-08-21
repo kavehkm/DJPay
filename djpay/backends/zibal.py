@@ -68,9 +68,9 @@ class Zibal(BaseBackend):
     def headers(self):
         return {"Content-Type": "application/json"}
 
-    def get_callback_url(self, bill_id: int, request: HttpRequest = None) -> str:
+    def get_callback_url(self, bill_pk: int, request: HttpRequest = None) -> str:
         callback_view_name = self._get_config("callback_view_name")
-        callback_view_kwargs = {"bill_pk": bill_id}
+        callback_view_kwargs = {"bill_pk": bill_pk}
         # check for request:
         # if request is present, its means user needs to absolute url
         # otherwise there is no need to absolute and relative is also acceptable

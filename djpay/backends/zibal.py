@@ -82,10 +82,7 @@ class Zibal(BaseBackend):
             return reverse(callback_view_name, kwargs=callback_view_kwargs)
 
     def convert_amount_currency(self, amount):
-        if self.currency == "IRR":
-            return amount
-        else:
-            return amount * 10
+        return amount if self.currency == "IRR" else amount * 10
 
     def pay(self, amount: int, **extra: Any) -> Bill:
         # pop out request from extra

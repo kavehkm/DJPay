@@ -87,26 +87,20 @@ class Zibal(BaseBackend):
     def pay(self, amount: int, **extra: Any) -> Bill:
         # pop out request from extra
         request = extra.pop("request", None)
-
-        # get optional data from extra
-        description = extra.get("description")
-        order_id = extra.get("order_pk")
-        mobile = extra.get("mobile")
-
-        # convert amount base on currency
-        amount = self.convert_amount_currency(amount)
-
         # create bill
         bill = Bill.objects.create(
             backend=self.identifier,
             amount=amount,
             extra=extra,
         )
-
+        # get optional data from extra
+        description = extra.get("description")
+        order_id = extra.get("order_pk")
+        mobile = extra.get("mobile")
         # send initialize request
         data = {
             "merchant": self.merchant_id,
-            "amount": amount,
+            "amount": self.convert_amount_currency(amount),
             "callbackUrl": self.get_callback_url(bill.pk, request),
             "description": description,
             "orderId": order_id,

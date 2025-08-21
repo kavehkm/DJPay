@@ -16,7 +16,7 @@ from ..utils import absolute_reverse
 from ..errors import PaymentImproperlyConfiguredError
 
 
-SAMPLE_BILL_ID = 0
+SAMPLE_BILL_PK = 0
 SUCCESS_STATUS_CODE = 100
 PAY_ENDPOINT = "https://gateway.zibal.ir/start/"
 VERIFY_ENDPOINT = "https://gateway.zibal.ir/v1/verify"
@@ -42,7 +42,7 @@ class Zibal(BaseBackend):
         if not callback_view_name or not isinstance(callback_view_name, str):
             raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
         try:
-            reverse(callback_view_name, {"bill_id": SAMPLE_BILL_ID})
+            reverse(callback_view_name, kwargs={"bill_pk": SAMPLE_BILL_PK})
         except NoReverseMatch:
             raise PaymentImproperlyConfiguredError("Invalid callback_view_name.")
 
